@@ -4,10 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
 import openai
 import os
-from bson import ObjectId
-from typing import List, Dict
+from typing import Dict
 
-# Initialize FastAPI
 app = FastAPI()
 
 # MongoDB connection details (update if necessary)
@@ -18,9 +16,10 @@ components_collection = db['components_collection']
 # Configure CORS
 allowed_origins = [
     "https://blackfoxgamingstudio.github.io",
-    "https://localhost:8080",
-    "https://your-google-site-domain",
-    # Add any other origins as needed
+    "http://localhost:8080",
+    "https://354196179-atari-embeds.googleusercontent.com",
+    "https://sites.google.com/view/russellpowersskillsportfolio/storyboard",
+    "*",  # Allow all origins for testing
 ]
 
 app.add_middleware(
@@ -47,16 +46,13 @@ async def generate_image(request: Request):
     if not prompt:
         raise HTTPException(status_code=400, detail="Prompt is required")
     
-    response = openai.images.generate(
-            model="dall-e-3",
-
-        prompt="for the story, show the next secne: " +prompt,
+    response = openai.Image.create(
+        prompt=prompt,
         n=1,
         size="512x512"
     )
     image_url = response['data'][0]['url']
     return {"url": image_url}
-
 
 @app.post("/upload_document")
 async def upload_document(file: bytes, filename: str):
@@ -68,7 +64,6 @@ async def upload_document(file: bytes, filename: str):
     file_path = os.path.join(UPLOAD_FOLDER, filename)
     with open(file_path, "wb") as f:
         f.write(file)
-    # Here you would process the file and extract prompts
     return {"success": "File uploaded and processed successfully"}
 
 @app.post("/generate_story")
@@ -82,13 +77,11 @@ async def generate_story(story_details: Dict):
     resolution = story_details.get('resolution', '')
     additional = story_details.get('additional', '')
 
-    # Here you would generate the story based on the details provided
     story = f"Title: {title}\nGenre: {genre}\nCharacters: {characters}\nSetting: {setting}\nPlot: {plot}\nConflict: {conflict}\nResolution: {resolution}\nAdditional: {additional}"
     return {"story": story}
 
 @app.post("/generate_next_chapter")
 async def generate_next_chapter(story_id: str):
-    # Here you would generate the next chapter based on the story_id
     next_chapter = "This is the next chapter of your story."
     return {"next_chapter": next_chapter}
 
@@ -97,8 +90,6 @@ async def generate_3d_model(variables: Dict):
     economic_factors = variables.get('economicFactors', [])
     creative_culture = variables.get('creativeCulture', [])
     knowledge_points = variables.get('knowledgePoints', [])
-    
-    # Here you would generate the 3D model based on the variables provided
     model_url = "http://example.com/3d_model.png"
     return FileResponse(model_url)
 
@@ -106,9 +97,9 @@ async def generate_3d_model(variables: Dict):
 async def add_character(character_data: Dict):
     character_name = character_data.get('characterName', '')
     attributes = character_data.get('attributes', {})
-    
-    # Here you would save the character attributes
     return {"success": f"Character {character_name} added/updated successfully"}
 
 if __name__ == "__main__":
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
     uvicorn.run(app, host="0.0.0.0", port=8000)
