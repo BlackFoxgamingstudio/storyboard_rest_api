@@ -1,6 +1,6 @@
 Flask
 openai
 werkzeug
-flask_cors
+flask-cors
 pymongo
 
