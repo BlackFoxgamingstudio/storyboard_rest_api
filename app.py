@@ -9,7 +9,7 @@ from pymongo import MongoClient
 
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all domains
+CORS(app, resources={r"/*": {"origins": "*"}})  # Enable CORS for all routes and origins
 
 # MongoDB connection
 client = MongoClient("mongodb+srv://blackloin:naruto45@cluster0.fmktl.mongodb.net/?retryWrites=true&w=majority")
