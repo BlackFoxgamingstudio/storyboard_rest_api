@@ -1,66 +1,75 @@
-import os
-from flask import Flask, request, jsonify, send_file
-from werkzeug.utils import secure_filename
-import openai
-from flask import Flask, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
+import openai
+import os
+from bson import ObjectId
+from typing import List, Dict
 
+# Initialize FastAPI
+app = FastAPI()
 
-
-app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["https://blackfoxgamingstudio.github.io", "https://1935468073-atari-embeds.googleusercontent.com", "https://1449641980-atari-embeds.googleusercontent.com"]}})
-# MongoDB connection
+# MongoDB connection details (update if necessary)
 client = MongoClient("mongodb+srv://blackloin:naruto45@cluster0.fmktl.mongodb.net/?retryWrites=true&w=majority")
-db = client['test']  # Assuming 'keytechlabs' is the correct database
+db = client['keytechlabs']
 components_collection = db['components_collection']
-checklist_tech_collection = db['keytechlabs.Checklist_tech']
-powershell_checklist_collection = db['keytechlabs.powershell_Checklist']
-image_collection = db['keytechlabs.image_collection']
 
+# Configure CORS
+allowed_origins = [
+    "https://blackfoxgamingstudio.github.io",
+    "https://localhost:8080",
+    "https://your-google-site-domain",
+    # Add any other origins as needed
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'docx'}
-openai.api_key = 'sk-proj-lUTO4mEBYhFfbcq0qkZ9T3BlbkFJRn8ohuhf3wzPpgD7Rm4i'
+# Create Upload Directory
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Ensure the upload folder exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Helper Function to Check Allowed File Types
+def allowed_file(filename: str) -> bool:
+    ALLOWED_EXTENSIONS = {'pdf', 'docx'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-@app.route('/generate_image', methods=['POST'])
-def generate_image():
-    prompt = request.json.get('prompt', '')
-    response = openai.images.generate(
-    model="dall-e-3",
-    prompt="for the story, show the next secne: " +prompt,
-    size="1024x1024",
-    quality="hd",
-    n=1
+@app.post("/generate_image")
+async def generate_image(request: Request):
+    data = await request.json()
+    prompt = data.get('prompt', '')
+    if not prompt:
+        raise HTTPException(status_code=400, detail="Prompt is required")
+    
+    response = openai.Image.create(
+        prompt=prompt,
+        n=1,
+        size="512x512"
     )
-    image_url = response.data[0].url
-    return jsonify({'url': image_url})
+    image_url = response['data'][0]['url']
+    return {"url": image_url}
 
-@app.route('/upload_document', methods=['POST'])
-def upload_document():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'})
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'})
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # Here you would process the file and extract prompts
-        return jsonify({'success': 'File uploaded and processed successfully'})
-    return jsonify({'error': 'File type not allowed'})
+@app.post("/upload_document")
+async def upload_document(file: bytes, filename: str):
+    if not file or not filename:
+        raise HTTPException(status_code=400, detail="File and filename are required")
+    if not allowed_file(filename):
+        raise HTTPException(status_code=400, detail="File type not allowed")
+    
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    with open(file_path, "wb") as f:
+        f.write(file)
+    # Here you would process the file and extract prompts
+    return {"success": "File uploaded and processed successfully"}
 
-@app.route('/generate_story', methods=['POST'])
-def generate_story():
-    story_details = request.json
+@app.post("/generate_story")
+async def generate_story(story_details: Dict):
     title = story_details.get('title', '')
     genre = story_details.get('genre', '')
     characters = story_details.get('characters', '')
@@ -69,40 +78,34 @@ def generate_story():
     conflict = story_details.get('conflict', '')
     resolution = story_details.get('resolution', '')
     additional = story_details.get('additional', '')
-    
+
     # Here you would generate the story based on the details provided
     story = f"Title: {title}\nGenre: {genre}\nCharacters: {characters}\nSetting: {setting}\nPlot: {plot}\nConflict: {conflict}\nResolution: {resolution}\nAdditional: {additional}"
-    
-    return jsonify({'story': story})
+    return {"story": story}
 
-@app.route('/generate_next_chapter', methods=['POST'])
-def generate_next_chapter():
-    story_id = request.json.get('story_id', '')
+@app.post("/generate_next_chapter")
+async def generate_next_chapter(story_id: str):
     # Here you would generate the next chapter based on the story_id
     next_chapter = "This is the next chapter of your story."
-    
-    return jsonify({'next_chapter': next_chapter})
+    return {"next_chapter": next_chapter}
 
-@app.route('/generate_3d_model', methods=['POST'])
-def generate_3d_model():
-    variables = request.json
+@app.post("/generate_3d_model")
+async def generate_3d_model(variables: Dict):
     economic_factors = variables.get('economicFactors', [])
     creative_culture = variables.get('creativeCulture', [])
     knowledge_points = variables.get('knowledgePoints', [])
     
     # Here you would generate the 3D model based on the variables provided
     model_url = "http://example.com/3d_model.png"
-    
-    return send_file(model_url)
+    return FileResponse(model_url)
 
-@app.route('/add_character', methods=['POST'])
-def add_character():
-    character_data = request.json
+@app.post("/add_character")
+async def add_character(character_data: Dict):
     character_name = character_data.get('characterName', '')
     attributes = character_data.get('attributes', {})
     
     # Here you would save the character attributes
-    return jsonify({'success': f'Character {character_name} added/updated successfully'})
+    return {"success": f"Character {character_name} added/updated successfully"}
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5081)
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
