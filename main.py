@@ -17,6 +17,7 @@ openai.api_key = 'sk-proj-lUTO4mEBYhFfbcq0qkZ9T3BlbkFJRn8ohuhf3wzPpgD7Rm4i'
 # Configure CORS
 allowed_origins = [
     "https://blackfoxgamingstudio.github.io",
+    'https://storyboard-rest-api.onrender.com'
     "https://blackfoxgamingstudio.github.io/storyboard_rest_api/",
     "https://blackfoxgamingstudio.github.io/storyboard_rest_api",
     "http://localhost:8080",
