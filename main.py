@@ -16,8 +16,10 @@ components_collection = db['components_collection']
 # Configure CORS
 allowed_origins = [
     "https://blackfoxgamingstudio.github.io",
+    "https://blackfoxgamingstudio.github.io/storyboard_rest_api/"
     "http://localhost:8080",
     "https://354196179-atari-embeds.googleusercontent.com",
+    "https://1509109279-atari-embeds.googleusercontent.com/"
     "https://sites.google.com/view/russellpowersskillsportfolio/storyboard",
     "*",  # Allow all origins for testing
 ]
