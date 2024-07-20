@@ -2,6 +2,24 @@ import os
 from flask import Flask, request, jsonify, send_file
 from werkzeug.utils import secure_filename
 import openai
+from flask import Flask, jsonify
+from flask_cors import CORS
+from pymongo import MongoClient
+
+
+
+app = Flask(__name__)
+CORS(app)  # Enable CORS for all domains
+
+# MongoDB connection
+client = MongoClient("mongodb+srv://blackloin:naruto45@cluster0.fmktl.mongodb.net/?retryWrites=true&w=majority")
+db = client['test']  # Assuming 'keytechlabs' is the correct database
+components_collection = db['components_collection']
+checklist_tech_collection = db['keytechlabs.Checklist_tech']
+powershell_checklist_collection = db['keytechlabs.powershell_Checklist']
+image_collection = db['keytechlabs.image_collection']
+
+
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -88,4 +106,4 @@ def add_character():
     return jsonify({'success': f'Character {character_name} added/updated successfully'})
 
 if __name__ == '__main__':
-    uvicorn.run(app, port=8080, host='0.0.0.0')
+    app.run(host='0.0.0.0', port=5081)
