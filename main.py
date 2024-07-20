@@ -12,6 +12,7 @@ app = FastAPI()
 client = MongoClient("mongodb+srv://blackloin:naruto45@cluster0.fmktl.mongodb.net/?retryWrites=true&w=majority")
 db = client['keytechlabs']
 components_collection = db['components_collection']
+openai.api_key = 'sk-proj-lUTO4mEBYhFfbcq0qkZ9T3BlbkFJRn8ohuhf3wzPpgD7Rm4i'
 
 # Configure CORS
 allowed_origins = [
