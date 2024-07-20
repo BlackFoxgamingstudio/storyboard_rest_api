@@ -47,13 +47,16 @@ async def generate_image(request: Request):
     if not prompt:
         raise HTTPException(status_code=400, detail="Prompt is required")
     
-    response = openai.Image.create(
-        prompt=prompt,
+    response = openai.images.generate(
+            model="dall-e-3",
+
+        prompt="for the story, show the next secne: " +prompt,
         n=1,
         size="512x512"
     )
     image_url = response['data'][0]['url']
     return {"url": image_url}
+
 
 @app.post("/upload_document")
 async def upload_document(file: bytes, filename: str):
