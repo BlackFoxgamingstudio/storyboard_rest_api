@@ -28,7 +28,7 @@
         document.getElementById('generateButton').addEventListener('click', async () => {
             const prompt = document.getElementById('promptInput').value;
             try {
-                const response = await fetch('https://your-api-url.onrender.com/generate_image', {
+                const response = await fetch('https://storyboard-rest-api.onrender.com/generate_image', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
