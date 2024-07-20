@@ -33,8 +33,10 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ prompt })
-                });
+                   },
+            body: JSON.stringify({ prompt }),
+            mode: 'cors' // This line ensures CORS request
+        });
 
                 if (!response.ok) {
                     throw new Error('Network response was not ok ' + response.statusText);
