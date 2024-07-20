@@ -88,4 +88,4 @@ def add_character():
     return jsonify({'success': f'Character {character_name} added/updated successfully'})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    uvicorn.run(app, port=8080, host='0.0.0.0')
