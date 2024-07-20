@@ -1,2 +1,6 @@
 Flask
 openai
+werkzeug
+flask_cors
+pymongo
+
