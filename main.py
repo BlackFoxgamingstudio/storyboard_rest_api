@@ -45,11 +45,9 @@ def allowed_file(filename: str) -> bool:
 @app.post("/generate_image")
 async def generate_image(request: Request):
     data = await request.json()
-    prompt = data.get('prompt', '')
-    if not prompt:
-        raise HTTPException(status_code=400, detail="Prompt is required")
+
     
-    prompt = request.json.get('prompt', '')
+    prompt = data
     response = openai.images.generate(
     model="dall-e-3",
     prompt="for the story, show the next secne: " +prompt,
