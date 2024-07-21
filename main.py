@@ -36,7 +36,7 @@ app.add_middleware(
 )
 
 # Create Upload Directory
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = '/var/data'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Helper Function to Check Allowed File Types
